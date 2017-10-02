@@ -1,0 +1,672 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>RAP BATTLE</title>
+        <script src="phaser.min.js"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+
+    window.onload = function() {
+        //  Note that this html file is set to pull down Phaser 2.5.0 from the JS Delivr CDN.
+        //  Although it will work fine with this tutorial, it's almost certainly not the most current version.
+        //  Be sure to replace it with an updated version before you start experimenting with adding your own code.
+
+        var game = new Phaser.Game(1920, 1080, Phaser.AUTO, '', { preload: preload, create: create, update: update }, false, false);
+
+        var platforms;
+        var playerHitBoxes;
+        var player;
+        var player2;
+        var cursors;
+        var spacebar;
+        var fireButton;
+        var weapon;
+        var projectile_key;
+
+        var player2_health;
+        var player2_health_num;
+        var player2_healthbar;
+
+        var player_health;
+        var player_health_num;
+        var player_healthbar;
+
+        var hud;
+
+        var fireballAnimation;
+        var bigHitAnimation;
+
+        var playingAnimation = false;
+        var playingAnimation2 = false;
+
+        var blockPlayerAnimation;
+
+        var bigHit;
+        var kickAnimationStopped;
+        var kickAnimationStopped2;
+
+        var background;
+
+        var health_point;
+        var health_point2;
+
+        var block_key;
+
+        var playerhitbox1;
+        var playerhitbox2;
+        var playerhitbox3;
+        var playerwins;
+
+        var player2hitbox1;
+        var player2hitbox2;
+        var player2hitbox3;
+        var player2wins;
+
+        var weapon2;
+        var fireballAnimation2;
+        var bigHitAnimation2;
+        var kickAnimation;
+        var kickAnimation2;
+        var kick_key;
+
+        var ground;
+
+        var playerisAttacking = false;
+
+        var playerblocking = false;
+        var player2blocking = false;
+
+        var AIstate;
+
+        var timeCheck;
+        var timer;
+
+        var countdown_num;
+        var countdown_text;
+        var countdown_event;
+
+        function preload () {
+            game.load.atlasJSONArray('drake', 'assets/drake4.png', 'assets/drake4.json');
+            game.load.atlasJSONArray('red_fireball', 'assets/red_fireball.png', 'assets/red_fireball.json');
+            game.load.atlasJSONArray('chance', 'assets/chance.png', 'assets/chance.json');
+            game.load.image('ground', 'assets/ground.png');
+            game.physics.startSystem(Phaser.Physics.ARCADE);
+
+            // game.load.image('fireball', 'assets/blue_fireball.png');
+            game.load.image('background1', 'assets/background1.png');
+            game.load.image('HUD', 'assets/HUD.png');
+            game.load.image('green_health', 'assets/green_health.png');
+            game.load.image('red_health', 'assets/red_health.png');
+
+            game.load.image('win_border', 'assets/border_gamewin.png');
+            game.load.image('win_fill', 'assets/fill_gamewin.png');
+        }
+
+        function resetgame() {
+            enableKeyBoardControls(false);
+            player.x = 200; player.y = 100;
+            player2.x = 1720; player2.y = 100;
+
+            player.animations.stop();
+            player2.animations.stop();
+
+            player.frameName = 'drake_standing.png';
+            player2.frameName = 'chance_standing.png';
+
+            player_health_num = 100;
+            player2_health_num = 100;
+            countdown_num = 3;
+
+            countdown_text = game.add.text(game.world.centerX, game.world.centerY, '3', {
+                font: '400px Arial',
+                fill: '#ff0044',
+                align: 'center'
+            });
+            countdown_text.anchor.setTo(0.5,0.5);
+            countdown_event = game.time.events.loop(Phaser.Timer.SECOND, countdown, this);
+
+            player_healthbar.width = 788;
+            player2_healthbar.width = 788;
+
+            player_health.setText('Health: ' + 100);
+            player2_health.setText('Health: ' + 100);
+
+            player2.scale.x = -1;
+            player2hitbox1.scale.x = -4;
+            player2hitbox2.scale.x = -5;
+            player2hitbox3.scale.x = -7;
+            weapon2.trackOffset.x = 125;
+            weapon2.trackOffset.y = 50;
+            weapon2.bulletAngleOffset = 180;
+
+            player.scale.x = 1;
+            playerhitbox1.scale.x = 4;
+            playerhitbox2.scale.x = 5;
+            playerhitbox3.scale.x = 7;
+            weapon.bulletAngleOffset = 0;
+            weapon.trackOffset.x = 125;
+            weapon.trackOffset.y = -50;
+
+            game.paused = false;
+        }
+
+        function countdown() {
+            countdown_num--;
+            countdown_text.setText(countdown_num.toString());
+
+            if (countdown_num === 0) {
+                enableKeyBoardControls(true);
+                countdown_text.kill();
+                game.time.events.remove(countdown_event);
+            }
+        }
+
+        function create () {
+            AIstate = 0;
+            playerwins = 0;
+            player2wins = 0;
+            background = game.add.sprite(0, 0, 'background1');
+            player = game.add.sprite(200,100, 'drake', 'drake_standing.png');
+            player2 = game.add.sprite(1720, 100, 'chance', 'chance_standing.png');
+
+            game.add.sprite(game.world.centerX - 90, 150, 'red_health').anchor.setTo(1,0.5);
+            game.add.sprite(game.world.centerX + 90, 150, 'red_health').anchor.setTo(0,0.5);
+
+            game.add.sprite(game.world.centerX + 100, 200, 'win_border');
+            game.add.sprite(game.world.centerX + 150, 200, 'win_border');
+            game.add.sprite(game.world.centerX - 100, 200, 'win_border').anchor.setTo(1,0);
+            game.add.sprite(game.world.centerX - 150, 200, 'win_border').anchor.setTo(1,0);
+
+            player_healthbar = game.add.sprite(game.world.centerX - 90, 150, 'green_health');
+            player_healthbar.anchor.setTo(1,0.5);
+            player2_healthbar = game.add.sprite(game.world.centerX + 90, 150, 'green_health');
+            player2_healthbar.anchor.setTo(0,0.5);
+
+            health_point = player2_healthbar.width/100;
+            health_point2 = player_healthbar.width/100;
+
+            console.log(player_healthbar.width);
+            console.log(player2_healthbar.width);
+
+            hud = game.add.sprite(game.world.centerX, 150, 'HUD');
+            hud.anchor.setTo(0.5,0.5);
+
+            player_health_num = 100;
+            player2_health_num = 100;
+
+            player_health = game.add.text(200, 260, "Health: 100", {
+                font: '65px Arial',
+                fill: '#ff0044',
+                align: 'center'
+            });
+
+            player2_health = game.add.text(game.world.width - 300, 300, "Health: 100", {
+                font: '65px Arial',
+                fill: '#ff0044',
+                align: 'center'
+            });
+
+            player2_health.anchor.setTo(0.5,0.5);
+            player.anchor.setTo(0.5,0.5);
+            player2.anchor.setTo(0.5,0.5);
+
+            game.physics.enable([player,player2], Phaser.Physics.ARCADE);
+            player.body.setSize(160,400,-15,0);
+            player2.body.setSize(160,400,-15,0);
+
+            playerhitbox1 = game.make.sprite(-25,-125);
+            playerhitbox1.scale.setTo(4,2);
+            player.addChild(playerhitbox1);
+
+            playerhitbox2 = game.make.sprite(-125,-200);
+            playerhitbox2.scale.setTo(5,7);
+            player.addChild(playerhitbox2);
+
+            playerhitbox3 = game.make.sprite(-100,30);
+            playerhitbox3.scale.setTo(7,5);
+            player.addChild(playerhitbox3);
+
+            player2hitbox1 = game.make.sprite(-25,-125);
+            player2hitbox1.scale.setTo(4,2);
+            player2.addChild(player2hitbox1);
+
+            player2hitbox2 = game.make.sprite(-125,-200);
+            player2hitbox2.scale.setTo(5,7);
+            player2.addChild(player2hitbox2);
+
+            player2hitbox3 = game.make.sprite(-100,30);
+            player2hitbox3.scale.setTo(7,5);
+            player2.addChild(player2hitbox3);
+
+            platforms = game.add.group();
+            platforms.enableBody = true;
+            ground = platforms.create(0, game.world.height - 74, 'ground');
+            ground.body.immovable = true;
+
+            game.physics.arcade.enable(player);
+            game.physics.arcade.enable(player2);
+
+            player.body.bounce.y = 0.2;
+            player.body.gravity.y = 3500;
+            player.body.collideWorldBounds = true;
+
+            player2.body.bounce.y = 0.2;
+            player2.body.gravity.y = 3500;
+            player2.body.collideWorldBounds = true;
+
+            weapon = game.add.weapon(40, 'red_fireball');
+            weapon.setBulletFrames(0,80,true);
+            weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            weapon.bulletSpeed = 700;
+            weapon.fireRate = 500;
+            weapon.trackSprite(player, 0, 0, true);
+
+            weapon2 = game.add.weapon(40, 'red_fireball');
+            weapon2.setBulletFrames(0,80,true);
+            weapon2.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+            weapon2.bulletSpeed = 400;
+            weapon2.fireRate = 500;
+            weapon2.trackSprite(player2, 0, 0, true);
+
+            addAnimations(player, 'drake');
+            addAnimations(player2, 'chance');
+
+            fireballAnimation = player.animations.add('attack', ['drake_breathe1.png', 'drake_punch1.png', 'drake_punch1.png'], 10, false);
+            bigHitAnimation = player.animations.add('bigAttack', ['drake_breathe1.png', 'drake_breathe1.png', 'drake_punch1.png', 'drake_punch1.png'], 15, false);
+            kickAnimation = player.animations.add('kickAttack', ['drake_kick1.png', 'drake_kick2.png'], 10, false);
+
+            // fireballAnimation2 = player2.animations.add('attack', ['drake_breathe1.png', 'drake_punch1.png', 'drake_punch1.png'], 10, false);
+            // bigHitAnimation2 = player2.animations.add('bigAttack', ['drake_breathe1.png', 'drake_breathe1.png', 'drake_punch1.png', 'drake_punch1.png'], 15, false);
+            // kickAnimation2 = player2.animations.add('kickAttack2', ['drake_kick1.png', 'drake_kick2.png'], 10, false);
+            // blockPlayerAnimation = player2.animations.add('block_player', ['drake_block.png', 'drake_block.png'], 10, true);
+
+            fireballAnimation2 = player2.animations.add('attack', ['chance_breathe1.png', 'chance_attack.png', 'chance_attack.png'], 10, false);
+            kickAnimation2 = player2.animations.add('kickAttack2', Phaser.Animation.generateFrameNames('chance_kick', 1, 4, '.png'), 10, false);
+            bigHitAnimation2 = player2.animations.add('bigAttack', ['chance_breathe1.png', 'chance_breathe1.png','chance_attack.png'], 10, false);
+            // blockPlayerAnimation = player2.animations.add('block_player', [])
+
+            fireballAnimation.onComplete.add(fireballAnimationStopped, this);
+            bigHitAnimation.onComplete.add(bigHitAnimationStopped, this);
+            kickAnimation.onComplete.add(kickAnimationStopped, this);
+
+            fireballAnimation2.onComplete.add(fireballAnimationStopped2, this);
+            bigHitAnimation2.onComplete.add(bigHitAnimationStopped2, this);
+            kickAnimation2.onComplete.add(kickAnimationStopped2, this);
+
+            weapon.addBulletAnimation('red_fireball_animation', ['red_fireball1.png', 'red_fireball2.png', 'red_fireball3.png', 'red_fireball4.png'], 10, true);
+            weapon2.addBulletAnimation('red_fireball_animation', ['red_fireball1.png', 'red_fireball2.png', 'red_fireball3.png', 'red_fireball4.png'], 10, true);
+
+            addKeyBoardControls();
+            enableKeyBoardControls(false);
+
+            player2.scale.x = -1;
+            player2hitbox1.scale.x = -4;
+            player2hitbox2.scale.x = -5;
+            player2hitbox3.scale.x = -7;
+            weapon2.trackOffset.x = 125;
+            weapon2.trackOffset.y = 50;
+            weapon2.bulletAngleOffset = 180;
+
+            // countdown();
+            countdown_num = 3;
+            countdown_text = game.add.text(game.world.centerX, game.world.centerY, '3', {
+                font: '400px Arial',
+                fill: '#ff0044',
+                align: 'center'
+            });
+            countdown_text.anchor.setTo(0.5,0.5);
+            countdown_event = game.time.events.loop(Phaser.Timer.SECOND, countdown, this);
+        }
+
+        function update() {
+            // game.debug.body(player);
+            // game.debug.body(player2);
+            //
+            // game.debug.body(playerhitbox1); //hands
+            // game.debug.body(playerhitbox2); //upper body
+            // game.debug.body(playerhitbox3); //legs
+            //
+            // game.debug.body(player2hitbox1); //hands
+            // game.debug.body(player2hitbox2); //upper body
+            // game.debug.body(player2hitbox3); //legs
+
+            game.physics.arcade.collide(player, ground);
+            game.physics.arcade.collide(player, platforms);
+            game.physics.arcade.collide(player2, ground);
+            game.physics.arcade.collide(player2, platforms);
+            game.physics.arcade.collide(player, player2);
+
+            if(player2_health_num <= 0) {
+                playerwins++;
+                game.paused = true;
+
+                if (playerwins === 1) {
+                    game.add.sprite(game.world.centerX - 100, 200, 'win_fill').anchor.setTo(1,0);
+                    resetgame();
+                } else if (playerwins === 2) {
+                    game.add.sprite(game.world.centerX - 150, 200, 'win_fill').anchor.setTo(1,0);
+                    resetgame();
+                } else {
+                    //player 1 is the winner
+                    console.log('winner is player 1');
+                }
+            }
+
+            if(player_health_num <= 0) {
+                player2wins++;
+                game.paused = true;
+
+                if (player2wins === 1) {
+                    game.add.sprite(game.world.centerX + 100, 200, 'win_fill');
+                    resetgame();
+                } else if (player2wins === 2) {
+                    game.add.sprite(game.world.centerX + 150, 200, 'win_fill');
+                    resetgame();
+                } else {
+                    console.log('winner is player 2');
+                }
+            }
+
+            player.body.velocity.x = 0;
+            player2.body.velocity.x = 0;
+
+            game.physics.arcade.collide(player2, weapon.bullets, bulletHitPlayer2, null, this);
+            game.physics.arcade.collide(player, weapon2.bullets, bulletHitPlayer, null, this);
+
+            if (countdown_num === 0) {
+                handlePlayer2Controls();
+                // player2.animations.play('bigAttack');
+                handlePlayerControls();
+            }
+
+            // if (blockPlayerAnimation.isFinished) {
+            //     player2blocking = false;
+            // }
+        }
+
+        function enableKeyBoardControls(set) {
+            game.input.enabled = set;
+            console.log(game.input.enabled);
+        }
+
+        function addKeyBoardControls() {
+            //player controls
+            cursors = game.input.keyboard.createCursorKeys();
+            projectile_key = game.input.keyboard.addKey(Phaser.Keyboard.E);
+            block_key = game.input.keyboard.addKey(Phaser.Keyboard.W);
+            bigHit = game.input.keyboard.addKey(Phaser.Keyboard.Q);
+            kick_key = game.input.keyboard.addKey(Phaser.Keyboard.R);
+
+            projectile_key.onDown.add(function(key) {
+                playingAnimation = true;
+                playerisAttacking = true;
+                player.animations.play('attack');
+            }, this);
+
+            bigHit.onDown.add(function(key) {
+                playingAnimation = true;
+                playerisAttacking = true;
+                player.animations.play('bigAttack');
+            }, this);
+
+            kick_key.onDown.add(function(key) {
+                playingAnimation = true;
+                playerisAttacking = true;
+                player.animations.play('kickAttack');
+            }, this);
+
+            block_key.onUp.add(function() {
+                playingAnimation = false;
+            }, this);
+
+            //player2 controls
+            // moveUp_key = game.input.keyboard.addKey(Phaser.Keyboard.I);
+            // moveLeft_key = game.input.keyboard.addKey(Phaser.Keyboard.J);
+            // moveRight_key = game.input.keyboard.addKey(Phaser.Keyboard.L);
+            // block_key2 = game.input.keyboard.addKey(Phaser.Keyboard.TWO);
+            // projectile_key2 = game.input.keyboard.addKey(Phaser.Keyboard.ONE);
+            // bigHit2 = game.input.keyboard.addKey(Phaser.Keyboard.THREE);
+            //
+            // projectile_key2.onDown.add(function(key) {
+            //     playingAnimation2 = true;
+            //     player2.animations.play('attack');
+            // }, this);
+            //
+            // bigHit2.onDown.add(function(key) {
+            //     playingAnimation2 = true;
+            //     player2.animations.play('bigAttack');
+            // }, this);
+        }
+
+        function addAnimations(sprite_name, char_name) {
+            sprite_name.animations.add('block', [char_name + '_block.png', char_name + '_block.png'], 10, true);
+            sprite_name.animations.add('stand', [char_name + '_breathe1.png', char_name + '_breathe2.png'], 3, true);
+            sprite_name.animations.add('right', ['walk1.png', 'walk2.png', 'walk3.png', 'walk1.png', 'walk4.png', 'walk5.png'], 10, true);
+            sprite_name.animations.add('walk_right', Phaser.Animation.generateFrameNames(char_name + '_walk', 1, 7, '.png'), 10, true);
+        }
+
+        function handlePlayerControls() {
+                if (block_key.isDown) {
+                    playingAnimation = true;
+                    playerblocking = true;
+                    player.animations.play('block');
+                    player.body.setSize(160, 400,0,0);
+                } else {
+                    playerblocking = false;
+                    if (cursors.left.isDown) {
+                        player.body.velocity.x = -600;
+                        if (!playingAnimation) {
+                            player.animations.play('right');
+                            player.scale.x = -1;
+                            playerhitbox1.scale.x = -4;
+                            playerhitbox2.scale.x = -5;
+                            playerhitbox3.scale.x = -7;
+                        }
+                        weapon.trackOffset.x = 125;
+                        weapon.trackOffset.y = 50;
+                        weapon.bulletAngleOffset = 180;
+
+                    } else if (cursors.right.isDown) {
+                        player.body.velocity.x = 600;
+                        if (!playingAnimation) {
+                            player.animations.play('right');
+                            player.scale.x = 1;
+                            playerhitbox1.scale.x = 4;
+                            playerhitbox2.scale.x = 5;
+                            playerhitbox3.scale.x = 7;
+                        }
+
+                        weapon.bulletAngleOffset = 0;
+                        weapon.trackOffset.x = 125;
+                        weapon.trackOffset.y = -50;
+
+                    } else if (!playingAnimation) {
+                            player.animations.stop('right');
+                            player.animations.stop('left');
+                            player.animations.play('stand');
+                    }
+
+                    if (cursors.up.isDown && player.body.touching.down) {
+                        player.body.velocity.y = -1500;
+                    }
+                }
+        }
+
+        function chooseRandom() {
+            if (timer > game.time.now) {
+                return;
+            }
+
+            timer = game.time.now + 250;
+
+            var rand = Math.random();
+            if (rand < 0.2) {
+                AIstate = 0;
+            } else if (rand < 0.4) {
+                AIstate = 1;
+            } else if (rand < 0.6) {
+                AIstate = 2;
+            } else {
+                AIstate = 3;
+            }
+        }
+
+        function handlePlayer2Controls() {
+            if (checkDistance() && AIstate != 3) {
+                player2.animations.play('attack');
+            }
+
+            if (playerisAttacking) {
+                // var rand = Math.random();
+                // if (rand < 0.5) {
+                //     blockPlayer();
+                // }
+                // AIstate = 4;
+                // playerisAttacking = false;
+            } else {
+                chooseRandom();
+
+                if (AIstate == 0) {
+                    jumpUp();
+                } else if (AIstate == 1) {
+                    player2.animations.play('bigAttack');
+                } else if (AIstate == 2) {
+                    player2.animations.play('attack');
+                } else if (AIstate == 3) {
+                    walkTowardsPlayer();
+                } else if (AIstate == 4) {
+                    // blockPlayer();
+                }
+            }
+        }
+
+        function jumpUp() {
+            if (player2.body.touching.down) {
+                player2.body.velocity.y = -1500;
+                player2.animations.play('kickAttack2');
+            }
+        }
+
+        function checkDistance() {
+            if (player.x + 100 < player2.x || player.x - 100 > player2.x) {
+                //player is far left or far right
+                return true;
+            }
+
+            return false;
+        }
+
+        function blockPlayer() {
+            player2blocking = true;
+            player2.animations.play('block_player');
+            player2.body.setSize(160, 400,0,0);
+        }
+
+        function walkTowardsPlayer() {
+            if (player.x + 100 < player2.x) {
+                //walk left
+                player2.body.velocity.x = -600;
+                if (!playingAnimation2) {
+                    player2.animations.play('walk_right');
+                    player2.scale.x = -1;
+                    player2hitbox1.scale.x = -4;
+                    player2hitbox2.scale.x = -5;
+                    player2hitbox3.scale.x = -7;
+                }
+                weapon2.trackOffset.x = 125;
+                weapon2.trackOffset.y = 50;
+                weapon2.bulletAngleOffset = 180;
+            } else if (player.x - 100 > player2.x) {
+                //walk right
+                player2.body.velocity.x = 600;
+                if (!playingAnimation2) {
+                    player2.animations.play('walk_right');
+                    player2.scale.x = 1;
+                    player2hitbox1.scale.x = 4;
+                    player2hitbox2.scale.x = 5;
+                    player2hitbox3.scale.x = 7;
+                }
+
+                weapon2.bulletAngleOffset = 0;
+                weapon2.trackOffset.x = 125;
+                weapon2.trackOffset.y = -50;
+            }
+        }
+
+        function fireballAnimationStopped(sprite, animation) {
+            weapon.bulletSpeed = player.scale.x * 700;
+            weapon.fire();
+            player.animations.stop();
+            playingAnimation = false;
+            playerisAttacking = false;
+        }
+
+        function fireballAnimationStopped2(sprite, animation) {
+            weapon2.bulletSpeed = player2.scale.x * 700;
+            weapon2.fire();
+            player2.animations.stop();
+            playingAnimation2 = false;
+        }
+
+        function bigHitAnimationStopped(sprite, animation) {
+            player.animations.stop();
+            playingAnimation = false;
+            game.physics.arcade.collide(playerhitbox1, player2, bigHitHandler, null, this);
+            playerisAttacking = false;
+        }
+
+        function bigHitAnimationStopped2(sprite, animation) {
+            player2.animations.stop();
+            playingAnimation2 = false;
+            game.physics.arcade.collide(player2hitbox1, player, bigHitHandler2, null, this);
+        }
+
+        function kickAnimationStopped2(sprite, animation) {
+            player2.animations.stop();
+            playingAnimation2 = false;
+            game.physics.arcade.collide(player2hitbox3, player, bigHitHandler2, null, this);
+        }
+
+        function bigHitHandler(player, enemy) {
+            console.log('kick collision');
+            player2_health_num = decreaseHealth(15, player2_health_num, player2_health, player2_healthbar, player2blocking);
+        }
+
+        function bigHitHandler2(player, enemy) {
+            player_health_num = decreaseHealth(15, player_health_num, player_health, player_healthbar, playerblocking);
+        }
+
+        function bulletHitPlayer(enemy, bullet) {
+            player_health_num = decreaseHealth(15, player_health_num, player_health, player_healthbar, playerblocking);
+            bullet.kill();
+        }
+
+        function bulletHitPlayer2(enemy, bullet) {
+            player2_health_num = decreaseHealth(15, player2_health_num, player2_health, player2_healthbar, player2blocking);
+            bullet.kill();
+        }
+
+        function kickAnimationStopped(player, enemy) {
+            player.animations.stop();
+            playingAnimation = false;
+            playerisAttacking = false;
+            game.physics.arcade.collide(playerhitbox3, player2, bigHitHandler, null, this);
+        }
+
+        function decreaseHealth(num, phn, ph, phb, block) {
+            if (!block) {
+                phn -= num;
+                ph.setText('Health: ' + phn);
+                phb.width = phb.width - (health_point * num);
+            }
+            return phn;
+        }
+    };
+
+    </script>
+
+    </body>
+</html>

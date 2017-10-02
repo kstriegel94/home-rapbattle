@@ -1,0 +1,108 @@
+{"frames": [
+
+{
+	"filename": "drake_block.png",
+	"frame": {"x":460,"y":395,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "drake_breathe1.png",
+	"frame": {"x":690,"y":395,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "drake_breathe2.png",
+	"frame": {"x":230,"y":395,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "drake_kick1.png",
+	"frame": {"x":230,"y":790,"w":230,"h":396},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":396},
+	"sourceSize": {"w":230,"h":396}
+},
+{
+	"filename": "drake_kick2.png",
+	"frame": {"x":460,"y":790,"w":230,"h":396},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":396},
+	"sourceSize": {"w":230,"h":396}
+},
+{
+	"filename": "drake_punch1.png",
+	"frame": {"x":0,"y":790,"w":230,"h":396},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":396},
+	"sourceSize": {"w":230,"h":396}
+},
+{
+	"filename": "drake_standing.png",
+	"frame": {"x":690,"y":790,"w":231,"h":398},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":231,"h":398},
+	"sourceSize": {"w":231,"h":398}
+},
+{
+	"filename": "walk1.png",
+	"frame": {"x":0,"y":0,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "walk2.png",
+	"frame": {"x":230,"y":0,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "walk3.png",
+	"frame": {"x":690,"y":0,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "walk4.png",
+	"frame": {"x":460,"y":0,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+},
+{
+	"filename": "walk5.png",
+	"frame": {"x":0,"y":395,"w":230,"h":395},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":230,"h":395},
+	"sourceSize": {"w":230,"h":395}
+}],
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "drake4.png",
+	"format": "RGBA8888",
+	"size": {"w":921,"h":1188},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:6f102c2b8178351dc1ae1f4ce2d9b3e2:062589301f1b749d65dc275225e405a7:0a7988977f6178196439d9c919065c6f$"
+}
+}
